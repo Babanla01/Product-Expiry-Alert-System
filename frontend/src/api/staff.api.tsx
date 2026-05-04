@@ -6,17 +6,18 @@ export const getAllStaffApi = async (): Promise<User[]> => {
   return res.data
 }
 
-export const createStaffApi = async (data: {
-  name: string
-  email: string
-  password: string
-}): Promise<User> => {
+export const createStaffApi = async (data: { name: string; email: string; password: string }): Promise<User> => {
   const res = await api.post('/staff', data)
   return res.data
 }
 
 export const deactivateStaffApi = async (id: string) => {
   const res = await api.patch(`/staff/${id}/deactivate`)
+  return res.data
+}
+
+export const reactivateStaffApi = async (id: string) => {
+  const res = await api.patch(`/staff/${id}/reactivate`)
   return res.data
 }
 

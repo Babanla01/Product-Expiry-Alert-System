@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getAllStaffApi, createStaffApi, deactivateStaffApi, deleteStaffApi } from '../api/staff.api'
+import { getAllStaffApi, createStaffApi, deactivateStaffApi, reactivateStaffApi, deleteStaffApi } from '../api/staff.api'
 import StaffForm from '../components/StaffForm'
 import type { User } from '../types'
 
@@ -19,18 +19,23 @@ export default function StaffPage() {
 
   const handleCreate = async (data: { name: string; email: string; password: string }) => {
     const newStaff = await createStaffApi(data)
-    setStaff((prev) => [newStaff, ...prev])
+    setStaff(prev => [newStaff, ...prev])
   }
 
   const handleDeactivate = async (id: string) => {
     await deactivateStaffApi(id)
-    setStaff((prev) => prev.map((s) => s._id === id ? { ...s, isActive: false } : s))
+    setStaff(prev => prev.map(s => s._id === id ? { ...s, isActive: false } : s))
+  }
+
+  const handleReactivate = async (id: string) => {
+    await reactivateStaffApi(id)
+    setStaff(prev => prev.map(s => s._id === id ? { ...s, isActive: true } : s))
   }
 
   const handleDelete = async () => {
     if (!deleteTarget) return
     await deleteStaffApi(deleteTarget._id)
-    setStaff((prev) => prev.filter((s) => s._id !== deleteTarget._id))
+    setStaff(prev => prev.filter(s => s._id !== deleteTarget._id))
     setDeleteTarget(null)
   }
 
@@ -76,20 +81,29 @@ export default function StaffPage() {
                 </tr>
               </thead>
               <tbody>
-                {staff.map((member) => (
+                {staff.map(member => (
                   <tr key={member._id}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={{
                           width: 30, height: 30, borderRadius: '50%',
-                          background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                          background: member.isActive ? 'var(--bg-elevated)' : 'var(--status-expired-bg)',
+                          border: `1px solid ${member.isActive ? 'var(--border)' : 'rgba(232,69,60,0.2)'}`,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: 12, fontFamily: 'var(--font-display)', fontWeight: 700,
-                          color: 'var(--text-secondary)', flexShrink: 0,
+                          color: member.isActive ? 'var(--text-secondary)' : 'var(--status-expired)',
+                          flexShrink: 0,
                         }}>
-                          {member.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
+                          {member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                         </div>
-                        <span style={{ fontWeight: 500 }}>{member.name}</span>
+                        <div>
+                          <div style={{ fontWeight: 500 }}>{member.name}</div>
+                          {member.mustChangePassword && (
+                            <div style={{ fontSize: 10, color: 'var(--status-expiring)', fontFamily: 'var(--font-mono)' }}>
+                              Awaiting password change
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="td-mono" style={{ fontSize: 13 }}>{member.email}</td>
@@ -102,14 +116,16 @@ export default function StaffPage() {
                     <td className="td-mono" style={{ fontSize: 12 }}>{formatDate(member.createdAt)}</td>
                     <td>
                       <div className="td-actions">
-                        {member.isActive && (
+                        {member.isActive ? (
                           <button className="btn btn-secondary btn-sm" onClick={() => handleDeactivate(member._id)}>
                             Deactivate
                           </button>
+                        ) : (
+                          <button className="btn btn-ghost btn-sm" style={{ color: 'var(--status-valid)', borderColor: 'rgba(45,190,108,0.3)' }} onClick={() => handleReactivate(member._id)}>
+                            Reactivate
+                          </button>
                         )}
-                        <button className="btn btn-danger btn-sm" onClick={() => setDeleteTarget(member)}>
-                          Delete
-                        </button>
+                        <button className="btn btn-danger btn-sm" onClick={() => setDeleteTarget(member)}>Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -123,7 +139,7 @@ export default function StaffPage() {
       {showForm && <StaffForm onSubmit={handleCreate} onClose={() => setShowForm(false)} />}
 
       {deleteTarget && (
-        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setDeleteTarget(null)}>
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setDeleteTarget(null)}>
           <div className="modal" style={{ maxWidth: 420 }}>
             <div className="modal-header">
               <h2 className="modal-title">Delete Staff</h2>
@@ -131,9 +147,7 @@ export default function StaffPage() {
             </div>
             <div className="modal-body">
               <p style={{ color: 'var(--text-secondary)' }}>
-                Are you sure you want to permanently delete{' '}
-                <strong style={{ color: 'var(--text-primary)' }}>{deleteTarget.name}</strong>?
-                This cannot be undone.
+                Are you sure you want to permanently delete <strong style={{ color: 'var(--text-primary)' }}>{deleteTarget.name}</strong>? This cannot be undone.
               </p>
             </div>
             <div className="modal-footer">

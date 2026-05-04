@@ -4,6 +4,7 @@ export interface User {
   email: string
   role: 'admin' | 'staff'
   isActive: boolean
+  mustChangePassword: boolean
   createdAt: string
 }
 
@@ -15,15 +16,26 @@ export interface Category {
   createdAt: string
 }
 
+export interface Supplier {
+  _id: string
+  name: string
+  contactName: string
+  email: string
+  phone: string
+  address: string
+  createdBy: { _id: string; name: string }
+  createdAt: string
+}
+
 export interface Product {
   _id: string
   name: string
   quantity: number
   category: Category | string
+  supplier: Supplier | string | null
   expiryDate: string
   status: 'valid' | 'expiring_soon' | 'expired'
   addedBy: { _id: string; name: string } | string
-  supplier: string
   description: string
   createdAt: string
 }
@@ -55,5 +67,17 @@ export interface AuthUser {
   name: string
   email: string
   role: 'admin' | 'staff'
+  mustChangePassword: boolean
   token: string
+}
+
+export interface AuditLog {
+  _id: string
+  action: string
+  entity: string
+  entityId: string
+  entityName: string
+  performedBy: { _id: string; name: string; role: string }
+  changes: Record<string, unknown>
+  createdAt: string
 }

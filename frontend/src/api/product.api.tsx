@@ -4,6 +4,7 @@ import type { Product } from '../types'
 export const getAllProductsApi = async (params?: {
   category?: string
   status?: string
+  supplier?: string
 }): Promise<Product[]> => {
   const res = await api.get('/products', { params })
   return res.data
@@ -19,10 +20,7 @@ export const createProductApi = async (data: Partial<Product>): Promise<Product>
   return res.data
 }
 
-export const updateProductApi = async (
-  id: string,
-  data: Partial<Product>
-): Promise<Product> => {
+export const updateProductApi = async (id: string, data: Partial<Product>): Promise<Product> => {
   const res = await api.put(`/products/${id}`, data)
   return res.data
 }

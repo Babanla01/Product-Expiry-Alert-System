@@ -1,16 +1,18 @@
 const cron = require('node-cron')
 const Product = require('../models/Product')
 const Alert = require('../models/Alert')
+const User = require('../models/User')
+const { sendExpiryAlertEmail } = require('../utils/mailer')
 
 const runExpiryCheck = async () => {
   try {
     console.log('Running expiry check...')
 
     const now = new Date()
-    const sevenDaysFromNow = new Date()
-    sevenDaysFromNow.setDate(now.getDate() + 7)
+    const products = await Product.find().populate('category', 'name')
 
-    const products = await Product.find()
+    const newlyExpired = []
+    const newlyExpiringSoon = []
 
     for (const product of products) {
       const expiry = new Date(product.expiryDate)
@@ -27,13 +29,11 @@ const runExpiryCheck = async () => {
         alertType = 'expiring_soon'
       }
 
-      // Update product status if changed
       if (product.status !== newStatus) {
         product.status = newStatus
         await product.save()
       }
 
-      // Create alert if needed (avoid duplicate alerts per day)
       if (alertType) {
         const todayStart = new Date()
         todayStart.setHours(0, 0, 0, 0)
@@ -55,6 +55,42 @@ const runExpiryCheck = async () => {
             type: alertType,
             message,
           })
+
+          const productData = {
+            name: product.name,
+            category: typeof product.category === 'object' ? product.category?.name : '',
+            quantity: product.quantity,
+            expiryDate: product.expiryDate,
+          }
+
+          if (alertType === 'expired') newlyExpired.push(productData)
+          else newlyExpiringSoon.push(productData)
+        }
+      }
+    }
+
+    // Send emails if there are new alerts
+    if (newlyExpired.length > 0 || newlyExpiringSoon.length > 0) {
+      const allUsers = await User.find({ isActive: true }).select('email name')
+      const emails = allUsers.map((u) => u.email).join(', ')
+
+      if (process.env.EMAIL_USER && emails) {
+        if (newlyExpired.length > 0) {
+          await sendExpiryAlertEmail({
+            to: emails,
+            subject: `⚠ ExpiryAlert: ${newlyExpired.length} product(s) have expired`,
+            products: newlyExpired,
+            type: 'expired',
+          }).catch((err) => console.error('Email send error (expired):', err.message))
+        }
+
+        if (newlyExpiringSoon.length > 0) {
+          await sendExpiryAlertEmail({
+            to: emails,
+            subject: `⏰ ExpiryAlert: ${newlyExpiringSoon.length} product(s) expiring soon`,
+            products: newlyExpiringSoon,
+            type: 'expiring_soon',
+          }).catch((err) => console.error('Email send error (expiring):', err.message))
         }
       }
     }
@@ -66,10 +102,7 @@ const runExpiryCheck = async () => {
 }
 
 const expiryChecker = () => {
-  // Run every day at midnight
   cron.schedule('0 0 * * *', runExpiryCheck)
-
-  // Also run once immediately on server start
   runExpiryCheck()
 }
 

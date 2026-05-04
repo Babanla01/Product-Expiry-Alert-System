@@ -17,6 +17,11 @@ const productSchema = new mongoose.Schema(
       ref: 'Category',
       required: [true, 'Category is required'],
     },
+    supplier: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Supplier',
+      default: null,
+    },
     expiryDate: {
       type: Date,
       required: [true, 'Expiry date is required'],
@@ -30,11 +35,6 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-    },
-    supplier: {
-      type: String,
-      trim: true,
-      default: '',
     },
     description: {
       type: String,

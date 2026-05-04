@@ -1,7 +1,10 @@
 import { useAlerts } from '../hooks/useAlerts'
+import { exportAlertsCSV } from '../api/export.api'
+import { useState } from 'react'
 
 export default function AlertsPage() {
   const { alerts, loading, markAllRead } = useAlerts()
+  const [exporting, setExporting] = useState(false)
   const unreadCount = alerts.filter((a) => !a.isRead).length
 
   const formatDate = (d: string) =>
@@ -9,6 +12,15 @@ export default function AlertsPage() {
 
   const formatTime = (d: string) =>
     new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      await exportAlertsCSV()
+    } finally {
+      setExporting(false)
+    }
+  }
 
   return (
     <div>
@@ -20,11 +32,20 @@ export default function AlertsPage() {
               {unreadCount > 0 ? `${unreadCount} unread alert${unreadCount > 1 ? 's' : ''}` : 'All caught up'}
             </p>
           </div>
-          {unreadCount > 0 && (
-            <button className="btn btn-secondary" onClick={markAllRead}>
-              Mark all as read
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              className="btn btn-secondary"
+              onClick={handleExport}
+              disabled={exporting}
+            >
+              ↓ Export CSV
             </button>
-          )}
+            {unreadCount > 0 && (
+              <button className="btn btn-secondary" onClick={markAllRead}>
+                Mark all as read
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
