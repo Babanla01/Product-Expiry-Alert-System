@@ -3,6 +3,7 @@ const Product = require('../models/Product')
 const Alert = require('../models/Alert')
 const User = require('../models/User')
 const { sendExpiryAlertEmail } = require('../utils/mailer')
+const { resolveSupplierId } = require('../utils/supplierResolver')
 
 const runExpiryCheck = async () => {
   try {
@@ -31,7 +32,25 @@ const runExpiryCheck = async () => {
 
       if (product.status !== newStatus) {
         product.status = newStatus
-        await product.save()
+      }
+
+      const resolvedSupplier = await resolveSupplierId(product.supplier)
+      const updatePayload = {
+        status: newStatus,
+      }
+
+      if (resolvedSupplier && product.supplier !== resolvedSupplier) {
+        updatePayload.supplier = resolvedSupplier
+      } else if (product.supplier && typeof product.supplier === 'string') {
+        updatePayload.supplier = null
+      }
+
+      try {
+        if (Object.keys(updatePayload).length > 1 || product.status !== newStatus || product.supplier !== resolvedSupplier) {
+          await Product.updateOne({ _id: product._id }, { $set: updatePayload })
+        }
+      } catch (saveError) {
+        console.error('Product update failed:', saveError.message)
       }
 
       if (alertType) {
@@ -78,7 +97,7 @@ const runExpiryCheck = async () => {
         if (newlyExpired.length > 0) {
           await sendExpiryAlertEmail({
             to: emails,
-            subject: `⚠ ExpiryAlert: ${newlyExpired.length} product(s) have expired`,
+            subject: `⚠ Delight Supermarket: ${newlyExpired.length} product(s) have expired`,
             products: newlyExpired,
             type: 'expired',
           }).catch((err) => console.error('Email send error (expired):', err.message))
@@ -87,7 +106,7 @@ const runExpiryCheck = async () => {
         if (newlyExpiringSoon.length > 0) {
           await sendExpiryAlertEmail({
             to: emails,
-            subject: `⏰ ExpiryAlert: ${newlyExpiringSoon.length} product(s) expiring soon`,
+            subject: `⏰ Delight Supermarket: ${newlyExpiringSoon.length} product(s) expiring soon`,
             products: newlyExpiringSoon,
             type: 'expiring_soon',
           }).catch((err) => console.error('Email send error (expiring):', err.message))

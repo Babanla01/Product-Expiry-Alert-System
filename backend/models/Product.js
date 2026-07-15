@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const { resolveSupplierId } = require('../utils/supplierResolver')
 
 const productSchema = new mongoose.Schema(
   {
@@ -44,5 +45,21 @@ const productSchema = new mongoose.Schema(
   },
   { timestamps: true }
 )
+
+productSchema.pre('save', async function (next) {
+  try {
+    if (this.isModified('supplier') || this.isNew) {
+      const normalizedSupplier = await resolveSupplierId(this.supplier)
+      if (normalizedSupplier && normalizedSupplier !== this.supplier) {
+        this.supplier = normalizedSupplier
+      } else if (this.supplier && typeof this.supplier === 'string') {
+        this.supplier = null
+      }
+    }
+    next()
+  } catch (error) {
+    next(error)
+  }
+})
 
 module.exports = mongoose.model('Product', productSchema)

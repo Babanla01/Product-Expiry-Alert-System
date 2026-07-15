@@ -34,9 +34,9 @@ export default function LoginPage() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-header">
-          <div className="login-logo-wrap">⏱</div>
-          <h1 className="login-title">Expiry<span>Alert</span></h1>
-          <p className="login-desc">Sign in to manage your product inventory</p>
+          <div className="login-logo-wrap">🛒</div>
+          <h1 className="login-title">Delight<span>Supermarket</span></h1>
+          <p className="login-desc">Sign in to manage inventory and expiry alerts</p>
         </div>
         <form onSubmit={handleSubmit}>
           {error && <div className="error-msg">{error}</div>}

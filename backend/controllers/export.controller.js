@@ -154,8 +154,8 @@ const exportProductsPDF = async (req, res) => {
 <body>
   <div class="header">
     <div>
-      <div class="logo">Expiry<span>Alert</span></div>
-      <div style="color:#888;font-size:12px;margin-top:4px">Product Expiry Management</div>
+      <div class="logo">Delight<span>Supermarket</span></div>
+      <div style="color:#888;font-size:12px;margin-top:4px">Inventory & Expiry Management</div>
     </div>
     <div class="meta">
       <div style="font-weight:600;margin-bottom:2px">Products Report</div>
@@ -199,7 +199,7 @@ const exportProductsPDF = async (req, res) => {
     <tbody>${rows}</tbody>
   </table>
 
-  <div class="footer">ExpiryAlert — Product Expiry Management System · ${new Date().getFullYear()}</div>
+  <div class="footer">Delight Supermarket — Inventory & Expiry Management · ${new Date().getFullYear()}</div>
 </body>
 </html>`
 

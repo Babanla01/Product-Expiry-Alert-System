@@ -27,9 +27,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-logo">
         <div className="sidebar-logo-mark">
-          <div className="logo-icon">⏱</div>
+          <div className="logo-icon">🛒</div>
           <div>
-            <div className="logo-text">ExpiryAlert</div>
+            <div className="logo-text">Delight Supermarket</div>
             <div className="logo-sub">Inventory Manager</div>
           </div>
         </div>

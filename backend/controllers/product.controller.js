@@ -1,5 +1,6 @@
 const Product = require('../models/Product')
 const { logAction } = require('../utils/audit')
+const { resolveSupplierId } = require('../utils/supplierResolver')
 
 const createProduct = async (req, res) => {
   try {
@@ -7,9 +8,10 @@ const createProduct = async (req, res) => {
     if (!name || !quantity || !category || !expiryDate) {
       return res.status(400).json({ message: 'Name, quantity, category and expiry date are required' })
     }
+    const resolvedSupplier = await resolveSupplierId(supplier, undefined, req.user._id)
     const product = await Product.create({
       name, quantity, category,
-      supplier: supplier || null,
+      supplier: resolvedSupplier || null,
       expiryDate, description,
       addedBy: req.user._id,
     })
@@ -73,7 +75,10 @@ const updateProduct = async (req, res) => {
     if (name) product.name = name
     if (quantity !== undefined) product.quantity = quantity
     if (category) product.category = category
-    if (supplier !== undefined) product.supplier = supplier || null
+    if (supplier !== undefined) {
+      const resolvedSupplier = await resolveSupplierId(supplier, undefined, req.user._id)
+      product.supplier = resolvedSupplier || null
+    }
     if (expiryDate) product.expiryDate = expiryDate
     if (description !== undefined) product.description = description
     if (expiryDate) {

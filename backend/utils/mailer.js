@@ -38,7 +38,7 @@ const sendExpiryAlertEmail = async ({ to, subject, products, type }) => {
     <div style="background:#0f0f11;padding:24px 32px;display:flex;align-items:center;gap:12px;">
       <div style="background:#f5a623;width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;">⏱</div>
       <div>
-        <div style="color:#f0ede8;font-size:18px;font-weight:800;letter-spacing:-0.3px;">ExpiryAlert</div>
+        <div style="color:#f0ede8;font-size:18px;font-weight:800;letter-spacing:-0.3px;">Delight Supermarket</div>
         <div style="color:#9896a0;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;">Inventory Manager</div>
       </div>
     </div>
@@ -73,7 +73,7 @@ const sendExpiryAlertEmail = async ({ to, subject, products, type }) => {
     </div>
 
     <div style="background:#f8f8f8;padding:16px 32px;text-align:center;color:#aaa;font-size:11px;border-top:1px solid #e5e5e5;">
-      ExpiryAlert — Product Expiry Management System · ${new Date().getFullYear()}
+      Delight Supermarket — Inventory & Expiry Management · ${new Date().getFullYear()}
     </div>
   </div>
 </body>
