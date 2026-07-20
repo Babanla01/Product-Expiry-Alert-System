@@ -64,7 +64,7 @@ export default function ProductTable({ products, onEdit, onDelete }: ProductTabl
                   <div style={{ fontWeight: 500 }}>{product.name}</div>
                   {product.supplier && (
                     <div className="text-muted" style={{ fontSize: 12, marginTop: 2 }}>
-                      {product.supplier}
+                      {typeof product.supplier === 'object' ? product.supplier.name : product.supplier}
                     </div>
                   )}
                 </td>
